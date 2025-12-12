@@ -1,0 +1,96 @@
+---
+title: "Billboard Study"
+author: "Joshua Miller"
+format: html
+---
+
+## Problem 5
+
+How did the introduction of synthesizers and digital production tools affect the trend of #1 Billboard songs up for at least 5 weeks? 
+
+```{r}
+billboard <- read.csv("billboard.csv")
+#glimpse(billboard)
+```
+```{r}
+#| fig-alt: A bar chart plot that shows the distribution of energy of the top billboard song of at least 5 weeks categorized by decade
+
+billboard %>%
+  filter(weeks_at_number_one >= 5) %>%
+  mutate(year = as.numeric(substr(date, 1, 4)),
+         decade = floor(year / 10) * 10) %>%
+  ggplot(aes(x = energy, 
+             fill = factor(decade))) +
+  geom_histogram(binwidth = 5, 
+                 position = "fill", 
+                 color = "black") +
+  scale_fill_brewer(palette = "Dark2")+
+  labs(title = "Distribution of Energy for Billboard #1 Songs by Decade (≥5 weeks)",
+       x = "Energy",
+       y = "Count",
+       fill = "Decade") +
+  theme_minimal()
+```
+```{r}
+#| fig-alt: A density plot that shows the distribution of acousticness of the top billboard song of at least 5 weeks categorized by decade
+#| warning: false
+
+billboard %>%
+  filter(weeks_at_number_one >= 5) %>%
+  mutate(year = as.numeric(substr(date, 1, 4)),
+         decade = floor(year / 10) * 10) %>%
+  ggplot(aes(x = acousticness, 
+             fill = factor(decade))) +
+  geom_density(position = "fill") +
+  scale_fill_brewer(palette = "Dark2") +
+  labs(title = "Acousticness Distribution by Decade",
+       x = "Acousticness",
+       y = "Density",
+       fill = "Decade") +
+  theme_minimal()+
+  annotate(
+    geom = "label",
+    x = 23,  # x position of the label
+    y = 0.2, # y position of the label
+    label = "Despacito (x = 23, year = 2010)",
+    color = "black",
+    size = 3
+  )
+```
+
+```{r}
+#| fig-alt: A table that shows the top 5 number 1 billboard songs by decade reporting energy and acousticness 
+#| message: false
+#| warning: false
+library(gt)
+
+billboard %>%
+  mutate(year = as.numeric(substr(date, 1, 4)),
+         decade = floor(year / 10) * 10) %>%
+  group_by(decade) %>%
+  arrange(desc(weeks_at_number_one), .by_group = TRUE) %>%
+  slice_head(n = 5) %>%
+  select(song, artist, year, energy, acousticness, weeks_at_number_one) %>%
+  ungroup() %>%
+  gt() %>%
+  tab_header(
+    title = "Top 5 #1 Billboard Songs by Decade",
+    subtitle = "Energy, Acousticness, and Year"
+  ) %>%
+  cols_label(
+    song = "Song",
+    artist = "Artist",
+    year = "Year",
+    energy = "Energy",
+    acousticness = "Acousticness",
+    weeks_at_number_one = "Weeks at #1"
+  )
+```
+
+The introduction of synthesizers and digital production tools significantly influenced top Billboard songs that stayed at number one for at least five weeks. Two plots were used to illustrate these trends: one showing the relationship between energy, decade, and Billboard duration, and another showing acousticness, decade, and Billboard duration. The energy and acousticness were derived by spotify, the method of derivation is not known to me, but as it is an accreddited instituion I will trust the values. These visualizations reveal the gradual shift from acoustic instrumentation toward synthesized and digitally produced sounds. The Moog Synthesizer, introduced in 1964, marked the beginning of this rise, which continued through the 1970s, 1980s, and 1990s, shaping the sound of popular music we recognize today.[^1] The clear decline in acousticness across decades, visible in both the plots and the table, indicates the increasing popularity of artificial sounds. At the same time, the rise in energy levels may show that these electronic sounds could achieve greater intensity, which could attribute to their growing popularity in music production. The highlighted song is Despacito which clearly has lower levels of acoustics and is heavily favored in the year 2010 which supports our hypothesis. Future studies would be to look further into the correlation between the popularity of synthesizers and the decrease of acoustics as this possibly could also be due to the influence of other trends such as streaming. Using statistical analysis and possibly training a machine learning model on the decade and level of acoustics and energy to see if given energy and acoustic levels it could provide a decade of production. Overall, it is clear to see that top billboard songs with more energy and less acoustics are more popular from the 1980s and onward. 
+
+
+References:
+
+[^1]: History of the Synthesizer. Soundtrap Blog.    https://blog.soundtrap.com/history-of-the-synthesizer/
+(accessed December 2025).
